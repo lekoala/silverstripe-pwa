@@ -1,0 +1,15 @@
+{
+  "name": "sspwa",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "SilverStripe PWA",
+  "main": "index.js",
+  "scripts": {
+    "gen-push-keys": "npx web-push generate-vapid-keys",
+    "generate-assets-root": "npx pwa-asset-generator ../app/images/logo.svg ../app/images/icons/",
+    "generate-assets": "npx pwa-asset-generator ../../../app/images/logo.svg ../../../app/images/icons/"
+  },
+  "author": "thomas@lekoala.be",
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,8 @@
+---
+Name: pwa
+---
+SilverStripe\Control\Director:
+  rules:
+    'manifest.json': 'LeKoala\SsPwa\ManifestController'
+    'sw.js//$Action': 'LeKoala\SsPwa\ServiceWorkerController'
+    '__push//$Action': 'LeKoala\SsPwa\PushController'
