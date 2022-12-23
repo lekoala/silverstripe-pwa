@@ -27,6 +27,12 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
 
     /**
      * @config
+     * @var string
+     */
+    private static $auto_version = true;
+
+    /**
+     * @config
      * @var bool
      */
     private static $enable_client_cache = false;
@@ -90,6 +96,8 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
                 return $v;
             case 'string':
                 return "'$v'";
+            case 'array':
+                return '["' . implode('","', $v) . '"]';
             default;
                 return json_encode($v, JSON_PRETTY_PRINT);
         }
@@ -120,12 +128,13 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
      */
     protected static function getJsConstantsMap()
     {
+        $cacheManifest = self::CacheOnInstall();
         return [
             'self.__SW_DEBUG' => self::DebugMode(),
             'self.__SW_CACHE_NAME' => self::CacheName(),
             'self.__SW_VERSION' => self::Version(),
             'self.__SW_ENABLE_CLIENT_CACHE' => self::config()->get('enable_client_cache') ?? false,
-            'self.__SW_CACHE_MANIFEST' => self::CacheOnInstall(),
+            'self.__SW_CACHE_MANIFEST' => $cacheManifest,
             'self.__SW_PUSH_PUBLIC_KEY' => PushSubscription::getPublicKey(),
         ];
     }
@@ -202,11 +211,21 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
     }
 
     /**
+     * @param array $manifest
      * @return string
      */
-    public static function Version()
+    public static function Version($manifest = [])
     {
-        return self::config()->get('version') . "-" . date('Ymd_His', filemtime(self::getSwPath()));
+        if (self::config()->get('auto_version') || Director::isDev()) {
+            $base = Director::baseFolder();
+            $t = "";
+            foreach ($manifest as $file) {
+                $t .= filemtime($base . $file);
+            }
+            $t .= filemtime(self::getSwPath());
+            return md5($t);
+        }
+        return self::config()->get('version');
     }
 
     /**

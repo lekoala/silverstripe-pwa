@@ -129,7 +129,7 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
 
     public static function getIconsPath()
     {
-        $baseURL = Director::absoluteBaseURL();
+        $baseURL = '/';
         $iconsPath = self::join_links($baseURL, RESOURCES_DIR, 'app', 'images', 'icons');
         return $iconsPath;
     }

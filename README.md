@@ -12,7 +12,10 @@
 
 ## Generate icons
 
-Use the cli `npm run generate-assets` or upload a zip file with the required icons
+Use the cli `npm run generate-assets(-root)` (if you have a `app/images/logo.svg` file) or upload a zip file with the required icons
+
+Note: pay attention to [maskable icons](https://web.dev/maskable-icon/). You can test their
+size in the developer console.
 
 ## Subscribe to push notifications
 
