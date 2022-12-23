@@ -180,6 +180,11 @@ self.addEventListener("push", function (event) {
             return;
         }
 
+        // Avoid pusher notification
+        if (eventData.data && eventData.data.pusher) {
+            return;
+        }
+
         title = eventData.title;
 
         // Set specific options
