@@ -15,7 +15,7 @@
 Use the cli `npm run generate-assets(-root)` (if you have a `app/images/logo.svg` file) or upload a zip file with the required icons
 
 Note: pay attention to [maskable icons](https://web.dev/maskable-icon/). You can test their
-size in the developer console.
+size in the developer console. You can test them in [maskable.app](https://maskable.app/)
 
 ## Subscribe to push notifications
 

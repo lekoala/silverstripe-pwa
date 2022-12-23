@@ -112,12 +112,13 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         $iconsPath = self::getIconsPath();
         $sizes = [192, 512];
         $purposes = ['any', 'maskable'];
+        $version = ServiceWorkerController::config()->get('version');
 
         $icons = [];
         foreach ($sizes as $size) {
             foreach ($purposes as $purpose) {
                 $icons[] = [
-                    'src' => self::join_links($iconsPath, 'manifest-icon-' . $size . '.maskable.png'),
+                    'src' => self::join_links($iconsPath, 'manifest-icon-' . $size . '.maskable.png?' . $version),
                     'sizes' => $size . 'x' . $size,
                     'type' => 'image/png',
                     'purpose' => $purpose,
