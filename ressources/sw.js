@@ -194,9 +194,15 @@ self.addEventListener("push", function (event) {
         }
 
         // Check expiration if specified
-        if (eventData.expires && Date.now() > eventData.expires) {
-            debugLog("Push notification has expired");
-            return;
+        if (eventData.expires) {
+            const t =
+                typeof eventData.expires === "string"
+                    ? Date.parse(eventData.expires)
+                    : eventData.expires;
+            if (Date.now() > t) {
+                debugLog("Push notification has expired");
+                return;
+            }
         }
     } else {
         title = eventText;
