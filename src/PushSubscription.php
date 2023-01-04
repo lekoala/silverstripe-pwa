@@ -118,7 +118,14 @@ class PushSubscription extends DataObject
                 'privateKey' => $privateKey,
             ],
         ];
-        $webPush = new WebPush($auth);
+        $defaultOptions = [];
+        $timeout = 30;
+        $clientOptions = [];
+        // This fixes ca cert issues if server is not configured properly
+        if (strlen(ini_get('curl.cainfo')) === 0) {
+            $clientOptions['verify']  = \Composer\CaBundle\CaBundle::getBundledCaBundlePath();
+        }
+        $webPush = new WebPush($auth, $defaultOptions, $timeout, $clientOptions);
         $webPush->setReuseVAPIDHeaders(true);
 
         return $webPush;
