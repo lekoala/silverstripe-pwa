@@ -14,9 +14,18 @@ function promptForUpdate() {
  * @param {ServiceWorker} worker
  */
 function trackInstalling(worker) {
+    if (!worker) {
+        return;
+    }
     worker.addEventListener("statechange", function () {
         if (worker.state === "installed") {
-            updateReady(worker);
+            // if there's an existing controller (previous Service Worker), show the prompt
+            if (navigator.serviceWorker.controller) {
+                updateReady(worker);
+            } else {
+                // otherwise it's the first install, nothing to do
+                console.log("Service Worker initialized for the first time");
+            }
         }
     });
 }
@@ -111,6 +120,8 @@ async function registerServiceWorker() {
         }
 
         registration.addEventListener("updatefound", () => {
+            // The new Service Worker instance is not yet ready for activation,
+            // because its install handler is not yet complete and it actually may fail to install
             trackInstalling(registration.installing);
         });
 
