@@ -35,5 +35,5 @@
 <link rel="apple-touch-startup-image" href="{$PwaIconsPath}/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
 <% if EnableClientJs %>
-<script src="/sw.js/client" type="module">
+<script src="/sw.js/client" type="module"></script>
 <% end_if %>
