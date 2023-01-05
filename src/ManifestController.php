@@ -18,18 +18,26 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
      * @var string
      */
     private static $gcm_sender_id = null;
+
     /**
      * @link https://developer.mozilla.org/en-US/docs/Web/Manifest/background_color
      * @config
      * @var string
      */
     private static $background_color = '#ffffff';
+
     /**
      * @link https://developer.mozilla.org/en-US/docs/Web/Manifest/orientation
      * @config
      * @var string
      */
     private static $orientation = 'portrait-primary';
+
+    /**
+     * @config
+     * @var string
+     */
+    private static $custom_icon_path = '';
 
     /**
      * @var array
@@ -51,6 +59,11 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         $desc = $desc ?: $title;
 
         $icons = self::listIcons();
+
+        $theme_color = $background_color = $config->get('background_color');
+        if ($sc->ThemeColor) {
+            $theme_color = $sc->ThemeColor;
+        }
 
         $manifestContent = [
             // Full name of your PWA. It will appear along with the icon in the operating system's home screen, launcher, dock, or menu
@@ -89,10 +102,10 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
             ],
             // The background_color member defines a placeholder background color for the application page to display before its stylesheet is loaded.
             // This value is used by the user agent to draw the background color of a shortcut when the manifest is available before the stylesheet has loaded.
-            'background_color' => $config->get('background_color'),
+            'background_color' => $background_color,
             // The theme_color member is a string that defines the default theme color for the application.
             // This sometimes affects how the OS displays the site (e.g., on Android's task switcher, the theme color surrounds the site).
-            'theme_color' => $config->get('background_color'),
+            'theme_color' => $theme_color,
             // The orientation member defines the default orientation for all the website's top-level browsing contexts.
             'orientation' => $config->get('orientation'),
         ];
@@ -130,6 +143,16 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
 
     public static function getIconsPath()
     {
+        // can be dynamically configured through site config
+        $sc = SiteConfig::current_site_config();
+        if ($sc->hasMethod("PwaIconsPath")) {
+            return $sc->PwaIconsPath();
+        }
+        // can use custom override
+        if (self::config()->custom_icon_path) {
+            return self::config()->custom_icon_path;
+        }
+        // defaults to _resources/app/images/icons
         $baseURL = '/';
         $iconsPath = self::join_links($baseURL, RESOURCES_DIR, 'app', 'images', 'icons');
         return $iconsPath;
