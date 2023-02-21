@@ -233,6 +233,8 @@ async function configurePushButton(registration) {
     });
 }
 
-navigator.serviceWorker.ready.then((registration) => {
-    configurePushButton(registration);
-});
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.ready.then((registration) => {
+        configurePushButton(registration);
+    });
+}
