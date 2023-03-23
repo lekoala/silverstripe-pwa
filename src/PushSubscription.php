@@ -160,6 +160,10 @@ class PushSubscription extends DataObject
      */
     public function sendMessage($payload)
     {
+        if ($this->Platform && $this->Platform != self::WEBPUSH) {
+            throw new Exception("Not a webpush");
+        }
+
         $pushSub = $this->createSubscription();
         $webPush = self::getWebpushHandler();
 
@@ -253,6 +257,10 @@ class PushSubscription extends DataObject
         $subsByEndpoint = [];
         /** @var PushSubscription $sub */
         foreach ($subs as $sub) {
+            if ($sub->Platform && $sub->Platform != self::WEBPUSH) {
+                continue;
+            }
+
             $processed++;
 
             /** @var Member $m */
