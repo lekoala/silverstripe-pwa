@@ -19,9 +19,11 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.0",
-        "silverstripe/framework": "^4.10",
-        "minishlink/web-push": "^7.0"
+        "php": "^7.4 || ^8",
+        "silverstripe/recipe-plugin": "^1 || ^2",
+        "silverstripe/vendor-plugin": "^1 || ^2",
+        "silverstripe/framework": "^4.4 || ^5",
+        "minishlink/web-push": "^7.0 || ^8"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
