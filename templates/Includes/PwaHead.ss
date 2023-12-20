@@ -1,4 +1,4 @@
-<link rel="manifest" href="{$BaseHref}manifest.json">
+<link rel="manifest" href="{$BaseHref}/manifest.json">
 
 <%-- ios stuff --%>
 <link rel="apple-touch-icon" href="{$PwaIconsPath}/apple-icon-180.png">
