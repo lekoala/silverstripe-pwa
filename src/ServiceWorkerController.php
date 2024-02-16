@@ -12,7 +12,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
 {
 
     /**
-     * @var array
+     * @var array<string>
      */
     private static $allowed_actions = [
         'index',
@@ -27,7 +27,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
 
     /**
      * @config
-     * @var string
+     * @var bool
      */
     private static $auto_version = true;
 
@@ -45,15 +45,15 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
 
     /**
      * @config
-     * @var string
+     * @var ?string
      */
-    private static $custom_sw_path;
+    private static $custom_sw_path = null;
 
     /**
      * @config
-     * @var string
+     * @var ?string
      */
-    private static $custom_client_path;
+    private static $custom_client_path = null;
 
     /**
      * @return HTTPResponse
@@ -124,7 +124,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
     }
 
     /**
-     * @return array
+     * @return array<string,mixed>
      */
     protected static function getJsConstantsMap()
     {
@@ -146,6 +146,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
     protected static function replaceConstants($script)
     {
         $map = self::getJsConstantsMap();
+        //@phpstan-ignore-next-line
         $values = array_map('self::phpToJsVar', array_values($map));
         $script = str_replace(array_keys($map), $values, $script);
         return $script;
@@ -158,6 +159,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
     protected static function getJsContent($file)
     {
         $script = file_get_contents($file);
+        $script = $script ? $script : '';
         $script = self::replaceConstants($script);
         $script = self::minifyJs($script);
         return $script;
@@ -211,7 +213,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
     }
 
     /**
-     * @param array $manifest
+     * @param array<mixed> $manifest
      * @return string
      */
     public static function Version($manifest = [])
@@ -230,7 +232,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
 
     /**
      * A list with file to cache in the install event
-     * @return array
+     * @return array<string>
      */
     public static function CacheOnInstall()
     {
@@ -242,6 +244,9 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
         return array_merge([], array_unique($paths));
     }
 
+    /**
+     * @return array<string,string>
+     */
     public static function get_template_global_variables()
     {
         return [

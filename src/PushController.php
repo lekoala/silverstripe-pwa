@@ -15,7 +15,7 @@ class PushController extends Controller
     private static $enabled = true;
 
     /**
-     * @var array
+     * @var array<string>
      */
     private static $allowed_actions = [
         'index',
@@ -24,20 +24,26 @@ class PushController extends Controller
     ];
 
     /**
-     * @return HTTPResponse
+     * @return string
      */
     public function index()
     {
         return '';
     }
 
-    protected function getJsonData()
+    /**
+     * @return array<string,mixed>
+     */
+    protected function getJsonData(): array
     {
         $json = $this->getRequest()->getBody();
-        $data = json_decode($json, JSON_OBJECT_AS_ARRAY);
+        $data = json_decode($json, true);
         return $data;
     }
 
+    /**
+     * @return string|HTTPResponse
+     */
     public function addPushSubscription()
     {
         if (!self::config()->get('enabled')) {
@@ -53,12 +59,16 @@ class PushController extends Controller
             'success' => $success
         ];
         $body = json_encode($results);
+        $body = $body ? $body : '';
         $resp = $this->getResponse();
         $resp->addHeader('Content-Type', 'application/json');
         $resp->setBody($body);
         return $resp;
     }
 
+    /**
+     * @return string|HTTPResponse
+     */
     public function removePushSubscription()
     {
         if (!self::config()->get('enabled')) {
@@ -74,6 +84,7 @@ class PushController extends Controller
             'success' => $success
         ];
         $body = json_encode($results);
+        $body = $body ? $body : '';
         $resp = $this->getResponse();
         $resp->addHeader('Content-Type', 'application/json');
         $resp->setBody($body);

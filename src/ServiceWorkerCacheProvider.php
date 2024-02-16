@@ -4,5 +4,8 @@ namespace LeKoala\SsPwa;
 
 interface ServiceWorkerCacheProvider
 {
-    public static function getServiceWorkerCachedPaths();
+    /**
+     * @return array<string>
+     */
+    public static function getServiceWorkerCachedPaths(): array;
 }

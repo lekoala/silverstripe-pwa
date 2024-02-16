@@ -40,7 +40,7 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
     private static $custom_icon_path = '';
 
     /**
-     * @var array
+     * @var array<string>
      */
     private static $allowed_actions = [
         'index',
@@ -55,12 +55,14 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         $sc = SiteConfig::current_site_config();
 
         $title = $sc->Title;
+        //@phpstan-ignore-next-line
         $desc = $sc->Tagline;
         $desc = $desc ?: $title;
 
         $icons = self::listIcons();
 
         $theme_color = $background_color = $config->get('background_color');
+        //@phpstan-ignore-next-line
         if ($sc->ThemeColor) {
             $theme_color = $sc->ThemeColor;
         }
@@ -120,7 +122,10 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         return json_encode($manifestContent);
     }
 
-    public static function listIcons()
+    /**
+     * @return array<array{'src':string,'sizes':string,'type':string,'purpose':string}>
+     */
+    public static function listIcons(): array
     {
         $iconsPath = self::getIconsPath();
         $sizes = [192, 512];
@@ -141,11 +146,12 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         return $icons;
     }
 
-    public static function getIconsPath()
+    public static function getIconsPath(): string
     {
         // can be dynamically configured through site config
         $sc = SiteConfig::current_site_config();
         if ($sc->hasMethod("PwaIconsPath")) {
+            //@phpstan-ignore-next-line
             return $sc->PwaIconsPath();
         }
         // can use custom override
@@ -158,6 +164,9 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         return $iconsPath;
     }
 
+    /**
+     * @return array<string,string>
+     */
     public static function get_template_global_variables()
     {
         return [
@@ -165,7 +174,10 @@ class ManifestController extends Controller implements TemplateGlobalProvider, S
         ];
     }
 
-    public static function getServiceWorkerCachedPaths()
+    /**
+     * @return array<string>
+     */
+    public static function getServiceWorkerCachedPaths(): array
     {
         $icons = self::listIcons();
         return array_map(function ($v) {

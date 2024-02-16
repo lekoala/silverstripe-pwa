@@ -3,8 +3,10 @@
 namespace LeKoala\SsPwa;
 
 use Exception;
+use SilverStripe\ORM\DataList;
 use Minishlink\WebPush\WebPush;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Security\Member;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Environment;
@@ -26,6 +28,7 @@ use Minishlink\WebPush\MessageSentReport;
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/API/PushManager/subscribe
  * @link https://web.dev/push-notifications-subscribing-a-user/
+ * @property string $Endpoint
  * @property string $Subscription
  * @property string $Platform
  * @property string $LastCalled
@@ -40,8 +43,14 @@ class PushSubscription extends DataObject
     const FIREBASE = "firebase";
     const APN = "apn";
 
+    /**
+     * @var string
+     */
     private static $table_name = 'PushSubscription';
 
+    /**
+     * @var array<string,string>
+     */
     private static $db = [
         'Endpoint' => 'Varchar(255)',
         'Subscription' => 'Text',
@@ -51,14 +60,23 @@ class PushSubscription extends DataObject
         'LastCallErrorReason' => 'Text',
     ];
 
+    /**
+     * @var array<string,string>
+     */
     private static $has_one = [
         'Member' => Member::class
     ];
 
+    /**
+     * @var array<string>
+     */
     private static $summary_fields = [
         'Created', 'Member.Title'
     ];
 
+    /**
+     * @var array<string,mixed>
+     */
     private static $indexes = [
         'Endpoint' => true,
         'LastCalled' => true,
@@ -86,12 +104,18 @@ class PushSubscription extends DataObject
         return self::config()->push_private_key;
     }
 
+    /**
+     * @return FieldList
+     */
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
         return $fields;
     }
 
+    /**
+     * @return FieldList
+     */
     public function getCMSActions()
     {
         $actions = parent::getCMSActions();
@@ -122,8 +146,8 @@ class PushSubscription extends DataObject
         $timeout = 30;
         $clientOptions = [];
         // This fixes ca cert issues if server is not configured properly
-        if (strlen(ini_get('curl.cainfo')) === 0) {
-            $clientOptions['verify']  = \Composer\CaBundle\CaBundle::getBundledCaBundlePath();
+        if (ini_get('curl.cainfo') === false || ini_get('curl.cainfo') === '') {
+            $clientOptions['verify'] = \Composer\CaBundle\CaBundle::getBundledCaBundlePath();
         }
         $webPush = new WebPush($auth, $defaultOptions, $timeout, $clientOptions);
         $webPush->setReuseVAPIDHeaders(true);
@@ -131,7 +155,7 @@ class PushSubscription extends DataObject
         return $webPush;
     }
 
-    public function doTest()
+    public function doTest(): string
     {
         $payload = "Test at " . date('d/m/Y H:i:s');
         $report = $this->sendMessage($payload);
@@ -150,12 +174,12 @@ class PushSubscription extends DataObject
      */
     public function createSubscription()
     {
-        $data = json_decode($this->Subscription, JSON_OBJECT_AS_ARRAY);
+        $data = json_decode($this->Subscription, true);
         return Subscription::create($data);
     }
 
     /**
-     * @param string|array $payload
+     * @param string|array<string,mixed> $payload
      * @return MessageSentReport
      */
     public function sendMessage($payload)
@@ -170,6 +194,7 @@ class PushSubscription extends DataObject
         if (is_array($payload)) {
             $payload = json_encode($payload);
         }
+        $payload = $payload ? $payload : null;
 
         $report = $webPush->sendOneNotification(
             $pushSub,
@@ -186,6 +211,7 @@ class PushSubscription extends DataObject
     public static function deleteSubscriptions(Member $member)
     {
         $i = 0;
+        //@phpstan-ignore-next-line
         foreach ($member->PushSubscriptions() as $sub) {
             $i++;
             $sub->delete();
@@ -208,7 +234,7 @@ class PushSubscription extends DataObject
     }
 
     /**
-     * @param array $data
+     * @param array<string,mixed> $data
      * @param Member|null $member
      * @param string $type see consts
      * @return PushSubscription
@@ -219,8 +245,10 @@ class PushSubscription extends DataObject
         if ($member) {
             $sub->MemberID = $member->ID;
         }
-        $sub->Endpoint = $data['endpoint'];
-        $sub->Subscription = json_encode($data);
+        $encodedData = json_encode($data);
+        $encodedData = $encodedData ? $encodedData : '';
+        $sub->Endpoint = $data['endpoint'] ?? '';
+        $sub->Subscription = $encodedData;
         if ($type) {
             $sub->Platform = $type;
         }
@@ -234,13 +262,14 @@ class PushSubscription extends DataObject
      */
     public static function getByEndpoint($endpoint)
     {
+        //@phpstan-ignore-next-line
         return self::get()->filter('Endpoint', $endpoint)->first();
     }
 
     /**
      * @link https://github.com/web-push-libs/web-push-php
-     * @param string|array $where
-     * @param array|string $payload
+     * @param string|array<mixed> $where
+     * @param array<string,mixed>|string $payload
      * @return int
      */
     public static function sendPushNotifications($where, $payload)
@@ -251,6 +280,7 @@ class PushSubscription extends DataObject
         if (is_array($payload)) {
             $payload = json_encode($payload);
         }
+        $payload = $payload ? $payload : null;
 
         $webPush = PushSubscription::getWebpushHandler();
         $processed = 0;
@@ -262,9 +292,6 @@ class PushSubscription extends DataObject
             }
 
             $processed++;
-
-            /** @var Member $m */
-            $member = $sub->Member();
 
             $pushSub = $sub->createSubscription();
 
@@ -283,7 +310,7 @@ class PushSubscription extends DataObject
         foreach ($webPush->flush() as $report) {
             $endpoint = $report->getRequest()->getUri()->__toString();
 
-            $sub = $subsByEndpoint[$endpoint];
+            $sub = $subsByEndpoint[$endpoint] ?? '';
             if (!$sub) {
                 throw new Exception("Could not find subscription for $endpoint");
             }
