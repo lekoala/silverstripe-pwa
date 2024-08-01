@@ -38,6 +38,9 @@ class PushController extends Controller
     {
         $json = $this->getRequest()->getBody();
         $data = json_decode($json, true);
+        if (!$data) {
+            return [];
+        }
         return $data;
     }
 
