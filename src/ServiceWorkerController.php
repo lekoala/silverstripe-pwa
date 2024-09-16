@@ -146,8 +146,9 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
     protected static function replaceConstants($script)
     {
         $map = self::getJsConstantsMap();
-        //@phpstan-ignore-next-line
-        $values = array_map('self::phpToJsVar', array_values($map));
+        $values = array_map(function ($item) {
+            return self::phpToJsVar($item);
+        }, array_values($map));
         $script = str_replace(array_keys($map), $values, $script);
         return $script;
     }
