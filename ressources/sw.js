@@ -3,6 +3,7 @@ const VERSION = self.__SW_VERSION ?? "1";
 const DEBUG = self.__SW_DEBUG ?? true;
 const ENABLE_CLIENT_CACHE = self.__SW_ENABLE_CLIENT_CACHE ?? true;
 const CACHE_MANIFEST = self.__SW_CACHE_MANIFEST ?? [];
+const EXCLUDE_FROM_CACHE = self.__SW_EXCLUDE_FROM_CACHE ?? [];
 
 let debugLog = console.log.bind(self.console);
 if (!DEBUG) {
@@ -84,18 +85,40 @@ async function cacheFirst({ request, preloadResponsePromise, fallbackUrl }) {
 }
 
 self.addEventListener("fetch", (event) => {
-    // Skip cross-origin requests, like those for Google Analytics.
-    if (event.request.url.startsWith(self.location.origin)) {
-        event.respondWith(
-            cacheFirst({
-                request: event.request,
-                preloadResponsePromise: event.preloadResponse,
-                fallbackUrl: null,
-            })
-        );
-    } else {
-        debugLog(`Skipped: ${event.request.url}`);
+    const url = new URL(event.request.url);
+
+    // 1. SKIP CROSS-ORIGIN
+    if (!url.href.startsWith(self.location.origin)) {
+        debugLog(`Skipped cross-origin: ${url.href}`);
+        return;
     }
+
+    // 2. SKIP NON-GET REQUESTS
+    // Service workers should generally not handle POST/PUT/DELETE
+    // unless you are doing specific background sync logic.
+    if (event.request.method !== "GET") {
+        debugLog(`Skipped non-GET request: ${url.href}`);
+        return;
+    }
+
+    // 3. CHECK EXCLUSION LIST
+    const isExcluded = EXCLUDE_FROM_CACHE.some((pattern) =>
+        pattern.test(url.pathname)
+    );
+
+    if (isExcluded) {
+        debugLog(`Excluded from SW: ${url.href}`);
+        return; // Return checks nothing; it lets the browser handle the request natively.
+    }
+
+    // 4. PROCEED WITH CACHING STRATEGY
+    event.respondWith(
+        cacheFirst({
+            request: event.request,
+            preloadResponsePromise: event.preloadResponse,
+            fallbackUrl: null,
+        })
+    );
 });
 
 // The service worker lifecycle starts with registering the service worker.

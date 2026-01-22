@@ -43,6 +43,16 @@ LeKoala\SsPwa\ServiceWorkerController:
   custom_sw_path: "/my/custom/path"
 ```
 
+## Exclude from cache
+
+If you want to exclude specific patterns (eg: pdf files) from cache, you can use:
+
+```yml
+LeKoala\SsPwa\ServiceWorkerController:
+  exclude_from_cache:
+    - '/\.pdf$/i'
+```
+
 ## Use vapid keys
 
 You can generate the vapid keys with this [online tool](https://tools.reactpwa.com/vapid) or with the cli `npm run gen-push-keys`

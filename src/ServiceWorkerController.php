@@ -136,6 +136,7 @@ class ServiceWorkerController extends Controller implements TemplateGlobalProvid
             'self.__SW_ENABLE_CLIENT_CACHE' => self::config()->get('enable_client_cache') ?? false,
             'self.__SW_CACHE_MANIFEST' => $cacheManifest,
             'self.__SW_PUSH_PUBLIC_KEY' => PushSubscription::getPublicKey(),
+            'self.__SW_EXCLUDE_FROM_CACHE' => self::config()->get('exclude_from_cache') ?? [],
         ];
     }
 
